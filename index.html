@@ -1,53 +1,107 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>Growlytics Anonymous ID</title>
+  <title>Growlytics Fingerprint Test</title>
 </head>
 
 <body>
 
-    <h2>Growlytics Anonymous ID</h2>
+<h2>Growlytics Anonymous ID</h2>
 
-    <p id="anonymousId">Generating...</p>
+<h3>Generated Hash</h3>
+<pre id="hash">Generating...</pre>
 
-    <script>
+<h3>Values Used</h3>
+<pre id="values">Loading...</pre>
 
-        async function sha256(value) {
-            const data = new TextEncoder().encode(value);
-            const hash = await crypto.subtle.digest("SHA-256", data);
-            return Array.from(new Uint8Array(hash)).map(byte => byte.toString(16).padStart(2, "0")).join("");
-        }
+<script>
 
-        function getDeviceData() {
-            return [
-                navigator.platform || "",
-                navigator.userAgentData?.platform || "",
-                navigator.hardwareConcurrency || "",
-                navigator.deviceMemory || "",
-                navigator.maxTouchPoints || "",
-                screen.width || "",
-                screen.height || "",
-                window.devicePixelRatio || "",
-                screen.colorDepth || "",
-                Intl.DateTimeFormat().resolvedOptions().timeZone || "",
-                navigator.language || "",
-                (navigator.languages || []).join(",")
-            ].map(value =>String(value).trim().toLowerCase()).join("|");
-        }
+async function sha256(value) {
+  const data = new TextEncoder().encode(value);
 
-        async function generateAnonymousId() {
+  const hash = await crypto.subtle.digest(
+    "SHA-256",
+    data
+  );
 
-            const deviceData = getDeviceData();
+  return Array.from(new Uint8Array(hash))
+    .map(byte => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
 
-            const anonymousId = await sha256(deviceData);
-            document.getElementById("anonymousId").textContent = anonymousId;
-            console.log("Device Data:", deviceData);
-            console.log("Anonymous ID:", anonymousId);
-        }
-        generateAnonymousId();
-    </script>
+
+function getDeviceData() {
+
+  return {
+    platform:
+      navigator.platform || "",
+
+    userAgentPlatform:
+      navigator.userAgentData?.platform || "",
+
+    hardwareConcurrency:
+      navigator.hardwareConcurrency || "",
+
+    deviceMemory:
+      navigator.deviceMemory || "",
+
+    maxTouchPoints:
+      navigator.maxTouchPoints || "",
+
+    screenWidth:
+      screen.width || "",
+
+    screenHeight:
+      screen.height || "",
+
+    pixelRatio:
+      window.devicePixelRatio || "",
+
+    colorDepth:
+      screen.colorDepth || "",
+
+    timezone:
+      Intl.DateTimeFormat()
+        .resolvedOptions()
+        .timeZone || "",
+
+    language:
+      navigator.language || "",
+
+    languages:
+      (navigator.languages || []).join(",")
+  };
+}
+
+
+async function generateAnonymousId() {
+
+  const data = getDeviceData();
+
+  const rawString = Object.values(data)
+    .map(value =>
+      String(value)
+        .trim()
+        .toLowerCase()
+    )
+    .join("|");
+
+  const anonymousId = await sha256(rawString);
+
+  document.getElementById("hash").textContent =
+    anonymousId;
+
+  document.getElementById("values").textContent =
+    JSON.stringify(data, null, 2);
+
+  console.log("Raw:", rawString);
+  console.log("Anonymous ID:", anonymousId);
+}
+
+
+generateAnonymousId();
+
+</script>
 
 </body>
-
 </html>
