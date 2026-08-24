@@ -17,21 +17,16 @@
             const data = [
                 navigator.platform,
                 navigator.userAgentData?.platform || "",
-
                 navigator.hardwareConcurrency || "",
                 navigator.deviceMemory || "",
                 navigator.maxTouchPoints || "",
-
                 screen.width,
                 screen.height,
                 window.devicePixelRatio,
                 screen.colorDepth,
-
                 Intl.DateTimeFormat().resolvedOptions().timeZone,
                 navigator.language,
-                navigator.languages.join(","),
-
-                getWebGLRenderer()
+                navigator.languages.join(",")
             ].join("|");
 
             const buffer = await crypto.subtle.digest(
@@ -51,30 +46,6 @@
 
             console.log("Fingerprint:", hash);
             console.log("Raw:", data);
-        }
-
-        function getWebGLRenderer() {
-            try {
-                const canvas = document.createElement("canvas");
-
-                const gl =
-                    canvas.getContext("webgl") ||
-                    canvas.getContext("experimental-webgl");
-
-                if (!gl) return "";
-
-                const debug =
-                    gl.getExtension("WEBGL_debug_renderer_info");
-
-                if (!debug) return "";
-
-                return gl.getParameter(
-                    debug.UNMASKED_RENDERER_WEBGL
-                ) || "";
-
-            } catch {
-                return "";
-            }
         }
 
         generateFingerprint();
