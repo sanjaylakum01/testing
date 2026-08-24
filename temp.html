@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Growlytics Fingerprint Test</title>
+</head>
+
+<body>
+
+    <h2>Growlytics Anonymous Fingerprint</h2>
+
+    <p id="hash">Generating...</p>
+
+    <script>
+        async function generateFingerprint() {
+
+            const data = [
+                navigator.platform,
+                navigator.userAgentData?.platform || "",
+
+                navigator.hardwareConcurrency || "",
+                navigator.deviceMemory || "",
+                navigator.maxTouchPoints || "",
+
+                screen.width,
+                screen.height,
+                window.devicePixelRatio,
+                screen.colorDepth,
+
+                Intl.DateTimeFormat().resolvedOptions().timeZone,
+                navigator.language,
+                navigator.languages.join(","),
+
+                getWebGLRenderer()
+            ].join("|");
+
+            const buffer = await crypto.subtle.digest(
+                "SHA-256",
+                new TextEncoder().encode(data)
+            );
+
+            console.log(data);
+
+            const hash = Array.from(
+                new Uint8Array(buffer)
+            )
+                .map(byte => byte.toString(16).padStart(2, "0"))
+                .join("");
+
+            document.getElementById("hash").innerText = hash;
+
+            console.log("Fingerprint:", hash);
+            console.log("Raw:", data);
+        }
+
+        function getWebGLRenderer() {
+            try {
+                const canvas = document.createElement("canvas");
+
+                const gl =
+                    canvas.getContext("webgl") ||
+                    canvas.getContext("experimental-webgl");
+
+                if (!gl) return "";
+
+                const debug =
+                    gl.getExtension("WEBGL_debug_renderer_info");
+
+                if (!debug) return "";
+
+                return gl.getParameter(
+                    debug.UNMASKED_RENDERER_WEBGL
+                ) || "";
+
+            } catch {
+                return "";
+            }
+        }
+
+        generateFingerprint();
+    </script>
+
+</body>
+
+</html>
